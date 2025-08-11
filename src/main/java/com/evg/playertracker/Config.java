@@ -56,6 +56,8 @@ public class Config {
             .comment("Автоматическое создание резервных копий статистики")
             .define("autoBackupStats", true);
 
+
+
     // Настройки HUD
     public static final ModConfigSpec.EnumValue<HUDMode> HUD_MODE = BUILDER
             .comment("Режим отображения HUD")

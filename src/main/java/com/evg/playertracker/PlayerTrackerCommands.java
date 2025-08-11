@@ -60,6 +60,8 @@ public class PlayerTrackerCommands {
             .then(Commands.literal("cache")
                 .then(Commands.literal("clear").executes(PlayerTrackerCommands::clearCache))
                 .then(Commands.literal("stats").executes(PlayerTrackerCommands::cacheStats)))
+            .then(Commands.literal("scan")
+                .executes(PlayerTrackerCommands::scanPlayers))
             .then(Commands.literal("lookup")
                 .then(Commands.argument("player", StringArgumentType.word())
                     .executes(PlayerTrackerCommands::lookupPlayer)))
@@ -155,6 +157,9 @@ public class PlayerTrackerCommands {
             source.sendFailure(Component.literal("Эта команда может быть выполнена только игроком"));
             return 0;
         }
+        
+        // Сначала обнаруживаем игроков
+        PlayerDetector.detectPlayers(player.level());
         
         PlayerCache cache = PlayerTrackerMod.getInstance().getPlayerCache();
         List<PlayerData> players = cache.getVisiblePlayers(
@@ -333,6 +338,23 @@ public class PlayerTrackerCommands {
     private static int backupStats(CommandContext<CommandSourceStack> context) {
         context.getSource().sendSuccess(() -> Component.literal("§aРезервная копия статистики создана"), false);
         // Здесь должна быть логика создания резервной копии
+        return 1;
+    }
+    
+    private static int scanPlayers(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("Эта команда может быть выполнена только игроком"));
+            return 0;
+        }
+        
+        // Принудительно сканируем игроков
+        PlayerDetector.forceScan(player.level());
+        
+        PlayerCache cache = PlayerTrackerMod.getInstance().getPlayerCache();
+        int playerCount = cache.getCacheSize();
+        
+        source.sendSuccess(() -> Component.literal("§aСканирование завершено! Обнаружено игроков: §e" + playerCount), false);
         return 1;
     }
 }
