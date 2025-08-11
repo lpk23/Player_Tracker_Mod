@@ -36,7 +36,8 @@ public class PlayerTrackerModClient {
     
     private static void initializeClientComponents() {
         PlayerTrackerMod.LOGGER.info("Client components initialized");
-        PlayerTrackerMod.LOGGER.info("Для использования команд в мультиплеере используйте /playertracker");
-        PlayerTrackerMod.LOGGER.info("На клиенте команды работают только в одиночной игре");
+        PlayerTrackerMod.LOGGER.info("Мод работает полностью на клиенте");
+        PlayerTrackerMod.LOGGER.info("Обнаружение игроков происходит автоматически");
+        PlayerTrackerMod.LOGGER.info("Используйте HUD для просмотра информации");
     }
 }

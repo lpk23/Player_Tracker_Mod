@@ -1,5 +1,7 @@
 package com.evg.playertracker;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -11,7 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * PlayerDetector - работает и на клиенте, и на сервере
+ * PlayerDetector - работает на клиенте через зону рендера
  * Обнаружение происходит по запросу через команды
  */
 public class PlayerDetector {
@@ -21,7 +23,7 @@ public class PlayerDetector {
     /**
      * Основной метод обнаружения игроков - вызывается по команде
      */
-    public static void detectPlayers(Level level) {
+    public static void detectPlayers() {
         if (!Config.MOD_ENABLED.get()) {
             return;
         }
@@ -31,66 +33,93 @@ public class PlayerDetector {
             return;
         }
         
-        performDetection(level);
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer localPlayer = minecraft.player;
+        Level level = minecraft.level;
+        
+        if (localPlayer == null || level == null) {
+            return;
+        }
+        
+        performDetection(localPlayer, level);
     }
 
-    private static void performDetection(Level level) {
+    private static void performDetection(LocalPlayer localPlayer, Level level) {
+        Vec3 playerPos = localPlayer.position();
+        Vec3 playerLookDir = localPlayer.getLookAngle();
+        
+        // Получаем всех игроков в мире
         List<? extends Player> worldPlayers = level.players();
         
         for (Player player : worldPlayers) {
-            Vec3 playerPos = player.position();
+            // Пропускаем самого игрока
+            if (player.equals(localPlayer)) {
+                continue;
+            }
             
-            for (Player otherPlayer : worldPlayers) {
-                if (otherPlayer.equals(player)) {
-                    continue;
-                }
+            // Проверяем валидность игрока
+            if (!isValidPlayer(player.getName().getString())) {
+                continue;
+            }
+            
+            Vec3 targetPos = player.position();
+            double distance = playerPos.distanceTo(targetPos);
+            
+            // Проверяем дистанцию
+            if (distance > Config.MAX_DETECTION_DISTANCE.get()) {
+                continue;
+            }
+            
+            // Проверяем FOV фильтр
+            if (!isPlayerInFOV(playerPos, targetPos, playerLookDir)) {
+                continue;
+            }
+            
+            // Проверяем, не слишком ли часто мы обновляем этого игрока
+            UUID playerUUID = player.getUUID();
+            long currentTime = System.currentTimeMillis();
+            Long lastTime = lastDetectionTime.get(playerUUID);
+            
+            if (lastTime != null && (currentTime - lastTime) < 1000) {
+                continue;
+            }
+            
+            // Обновляем время последнего обнаружения
+            lastDetectionTime.put(playerUUID, currentTime);
+            
+            // Получаем биом
+            Biome biome = level.getBiome(player.blockPosition()).value();
+            
+            // Добавляем игрока в кэш
+            PlayerCache cache = PlayerTrackerMod.getInstance().getPlayerCache();
+            if (cache != null) {
+                cache.addPlayer(playerUUID, player.getName().getString(), targetPos, biome, playerPos);
                 
-                // Проверяем валидность игрока
-                if (!isValidPlayer(otherPlayer.getName().getString())) {
-                    continue;
-                }
-                
-                Vec3 targetPos = otherPlayer.position();
-                double distance = playerPos.distanceTo(targetPos);
-                
-                // Проверяем дистанцию
-                if (distance > Config.MAX_DETECTION_DISTANCE.get()) {
-                    continue;
-                }
-                
-                // Проверяем, не слишком ли часто мы обновляем этого игрока
-                UUID playerUUID = otherPlayer.getUUID();
-                long currentTime = System.currentTimeMillis();
-                Long lastTime = lastDetectionTime.get(playerUUID);
-                
-                if (lastTime != null && (currentTime - lastTime) < 1000) {
-                    continue;
-                }
-                
-                // Обновляем время последнего обнаружения
-                lastDetectionTime.put(playerUUID, currentTime);
-                
-                // Получаем биом
-                Biome biome = level.getBiome(otherPlayer.blockPosition()).value();
-                
-                // Добавляем игрока в кэш для каждого игрока, который его видит
-                PlayerCache cache = PlayerTrackerMod.getInstance().getPlayerCache();
-                if (cache != null) {
-                    cache.addPlayer(playerUUID, otherPlayer.getName().getString(), targetPos, biome, playerPos);
-                    
-                    // Записываем в статистику
-                    PlayerStats stats = PlayerTrackerMod.getInstance().getPlayerStats();
-                    if (stats != null) {
-                        long sessionDuration = 1000; // Примерная длительность сессии
-                        stats.recordPlayerAppearance(playerUUID, otherPlayer.getName().getString(), 
-                            otherPlayer.blockPosition(), biome, sessionDuration);
-                    }
+                // Записываем в статистику
+                PlayerStats stats = PlayerTrackerMod.getInstance().getPlayerStats();
+                if (stats != null) {
+                    long sessionDuration = 1000; // Примерная длительность сессии
+                    stats.recordPlayerAppearance(playerUUID, player.getName().getString(), 
+                        player.blockPosition(), biome, sessionDuration);
                 }
             }
         }
         
         // Очищаем старые записи о времени обнаружения
         cleanupOldDetectionTimes();
+    }
+
+    private static boolean isPlayerInFOV(Vec3 playerPos, Vec3 targetPos, Vec3 playerLookDir) {
+        if (!Config.FOV_FILTER.get()) {
+            return true;
+        }
+        
+        Vec3 directionToTarget = targetPos.subtract(playerPos).normalize();
+        double dotProduct = playerLookDir.dot(directionToTarget);
+        double angle = Math.acos(Math.max(-1.0, Math.min(1.0, dotProduct)));
+        double fovRadians = Math.toRadians(Config.FOV_ANGLE.get());
+        
+        return angle <= fovRadians / 2.0;
     }
 
     private static void cleanupOldDetectionTimes() {
@@ -133,10 +162,8 @@ public class PlayerDetector {
     }
 
     // Метод для принудительного сканирования игроков
-    public static void forceScan(Level level) {
-        if (level != null) {
-            performDetection(level);
-        }
+    public static void forceScan() {
+        detectPlayers();
     }
 
     // Метод для получения списка обнаруженных игроков
@@ -146,7 +173,18 @@ public class PlayerDetector {
             return List.of();
         }
         
-        return cache.getAllPlayers();
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer localPlayer = minecraft.player;
+        
+        if (localPlayer == null) {
+            return List.of();
+        }
+        
+        return cache.getVisiblePlayers(
+            localPlayer.position(),
+            Config.MAX_DETECTION_DISTANCE.get(),
+            Config.SORT_MODE.get()
+        );
     }
 
     // Метод для проверки, находится ли игрок в зоне видимости

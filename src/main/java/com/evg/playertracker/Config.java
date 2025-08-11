@@ -28,11 +28,15 @@ public class Config {
 
     public static final ModConfigSpec.BooleanValue FILTER_NPCS = BUILDER
             .comment("Фильтровать NPC (ботов и невалидных никнеймов)")
-            .define("filterNPCs", true);
+            .define("filterNpcs", true);
 
-    public static final ModConfigSpec.IntValue FOV_FILTER = BUILDER
-            .comment("Фильтр по FOV (угол обзора в градусах)")
-            .defineInRange("fovFilter", 90, 30, 180);
+    public static final ModConfigSpec.BooleanValue FOV_FILTER = BUILDER
+            .comment("Включить фильтр по полю зрения")
+            .define("fovFilter", true);
+            
+    public static final ModConfigSpec.IntValue FOV_ANGLE = BUILDER
+            .comment("Угол поля зрения в градусах")
+            .defineInRange("fovAngle", 90, 30, 180);
 
     // Настройки кэширования
     public static final ModConfigSpec.IntValue CACHE_LIFETIME = BUILDER

@@ -37,6 +37,9 @@ public class PlayerTrackerHUD {
             return;
         }
         
+        // Автоматически обнаруживаем игроков при каждом рендере HUD
+        PlayerDetector.detectPlayers();
+        
         PlayerCache cache = PlayerTrackerMod.getInstance().getPlayerCache();
         if (cache == null) {
             return;
@@ -94,7 +97,7 @@ public class PlayerTrackerHUD {
         Vec3 directionToTarget = targetPos.subtract(playerPos).normalize();
         double angle = Math.acos(playerLookDir.dot(directionToTarget)) * 180 / Math.PI;
         
-        return angle <= Config.FOV_FILTER.get() / 2.0;
+        return angle <= Math.toRadians(Config.FOV_ANGLE.get()) / 2.0;
     }
     
     // Метод для фильтрации NPC
