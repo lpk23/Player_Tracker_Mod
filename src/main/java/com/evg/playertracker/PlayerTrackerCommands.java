@@ -17,6 +17,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Система команд для Player Tracker Mod
+ * Все команды доступны всем игрокам без прав OP
+ */
 @EventBusSubscriber(modid = PlayerTrackerMod.MODID)
 public class PlayerTrackerCommands {
     
@@ -80,6 +84,7 @@ public class PlayerTrackerCommands {
     
     private static int showStatus(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
+        // Команда доступна всем игрокам без прав OP
         if (!(source.getEntity() instanceof ServerPlayer player)) {
             source.sendFailure(Component.literal("Эта команда может быть выполнена только игроком"));
             return 0;
@@ -145,6 +150,7 @@ public class PlayerTrackerCommands {
     
     private static int listPlayers(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
+        // Команда доступна всем игрокам без прав OP
         if (!(source.getEntity() instanceof ServerPlayer player)) {
             source.sendFailure(Component.literal("Эта команда может быть выполнена только игроком"));
             return 0;
