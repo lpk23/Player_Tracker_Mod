@@ -1,42 +1,116 @@
 package com.evg.playertracker;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-// An example config class. This is not required, but it's a good idea to have one to keep your config organized.
-// Demonstrates how to use Neo's config APIs
 public class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    public static final ModConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER
-            .comment("Whether to log the dirt block on common setup")
-            .define("logDirtBlock", true);
+    // Основные настройки мода
+    public static final ModConfigSpec.BooleanValue MOD_ENABLED = BUILDER
+            .comment("Включить/выключить мод")
+            .define("modEnabled", true);
 
-    public static final ModConfigSpec.IntValue MAGIC_NUMBER = BUILDER
-            .comment("A magic number")
-            .defineInRange("magicNumber", 42, 0, Integer.MAX_VALUE);
+    public static final ModConfigSpec.BooleanValue HUD_ENABLED = BUILDER
+            .comment("Включить/выключить HUD интерфейс")
+            .define("hudEnabled", true);
 
-    public static final ModConfigSpec.ConfigValue<String> MAGIC_NUMBER_INTRODUCTION = BUILDER
-            .comment("What you want the introduction message to be for the magic number")
-            .define("magicNumberIntroduction", "The magic number is... ");
+    public static final ModConfigSpec.IntValue MAX_PLAYERS_DISPLAY = BUILDER
+            .comment("Максимальное количество отображаемых игроков")
+            .defineInRange("maxPlayersDisplay", 10, 1, 50);
 
-    // a list of strings that are treated as resource locations for items
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> ITEM_STRINGS = BUILDER
-            .comment("A list of items to log on common setup.")
-            .defineListAllowEmpty("items", List.of("minecraft:iron_ingot"), () -> "", Config::validateItemName);
+    public static final ModConfigSpec.IntValue MAX_DETECTION_DISTANCE = BUILDER
+            .comment("Максимальная дистанция обнаружения игроков (в блоках)")
+            .defineInRange("maxDetectionDistance", 100, 10, 1000);
+
+    public static final ModConfigSpec.IntValue UPDATE_INTERVAL = BUILDER
+            .comment("Интервал обновления данных (в тиках)")
+            .defineInRange("updateInterval", 20, 5, 100);
+
+    public static final ModConfigSpec.BooleanValue FILTER_NPCS = BUILDER
+            .comment("Фильтровать NPC (ботов и невалидных никнеймов)")
+            .define("filterNPCs", true);
+
+    public static final ModConfigSpec.IntValue FOV_FILTER = BUILDER
+            .comment("Фильтр по FOV (угол обзора в градусах)")
+            .defineInRange("fovFilter", 90, 30, 180);
+
+    // Настройки кэширования
+    public static final ModConfigSpec.IntValue CACHE_LIFETIME = BUILDER
+            .comment("Время жизни кэшированных данных (в секундах)")
+            .defineInRange("cacheLifetime", 300, 60, 3600);
+
+    // Настройки статистики
+    public static final ModConfigSpec.BooleanValue AUTO_SAVE_STATS = BUILDER
+            .comment("Автоматическое сохранение статистики")
+            .define("autoSaveStats", true);
+
+    public static final ModConfigSpec.IntValue STATS_SAVE_INTERVAL = BUILDER
+            .comment("Интервал сохранения статистики (в минутах)")
+            .defineInRange("statsSaveInterval", 5, 1, 60);
+
+    public static final ModConfigSpec.IntValue MAX_STATS_FILE_SIZE = BUILDER
+            .comment("Максимальный размер файла статистики (в МБ)")
+            .defineInRange("maxStatsFileSize", 10, 1, 100);
+
+    public static final ModConfigSpec.BooleanValue AUTO_BACKUP_STATS = BUILDER
+            .comment("Автоматическое создание резервных копий статистики")
+            .define("autoBackupStats", true);
+
+    // Настройки HUD
+    public static final ModConfigSpec.EnumValue<HUDMode> HUD_MODE = BUILDER
+            .comment("Режим отображения HUD")
+            .defineEnum("hudMode", HUDMode.COMPACT);
+
+    public static final ModConfigSpec.EnumValue<SortMode> SORT_MODE = BUILDER
+            .comment("Режим сортировки игроков")
+            .defineEnum("sortMode", SortMode.DISTANCE);
+
+    public static final ModConfigSpec.BooleanValue SHOW_COORDINATES = BUILDER
+            .comment("Показывать координаты игроков")
+            .define("showCoordinates", true);
+
+    public static final ModConfigSpec.BooleanValue SHOW_BIOME = BUILDER
+            .comment("Показывать биом игрока")
+            .define("showBiome", true);
+
+    public static final ModConfigSpec.BooleanValue SHOW_DIRECTION = BUILDER
+            .comment("Показывать направление к игроку")
+            .define("showDirection", true);
 
     static final ModConfigSpec SPEC = BUILDER.build();
 
-    private static boolean validateItemName(final Object obj) {
-        return obj instanceof String itemName && BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(itemName));
+    public enum HUDMode {
+        COMPACT("compact"),
+        DETAILED("detailed"),
+        MINIMAL("minimal");
+
+        private final String name;
+
+        HUDMode(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public enum SortMode {
+        DISTANCE("distance"),
+        NAME("name"),
+        TEAM("team"),
+        BIOME("biome");
+
+        private final String name;
+
+        SortMode(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

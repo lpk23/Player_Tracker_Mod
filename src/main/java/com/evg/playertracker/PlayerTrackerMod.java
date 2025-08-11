@@ -38,6 +38,14 @@ public class PlayerTrackerMod {
     public static final String MODID = "playertrackermod";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
+    
+    // Singleton instance
+    private static PlayerTrackerMod instance;
+    
+    // Core components
+    private PlayerCache playerCache;
+    private PlayerStats playerStats;
+    
     // Create a Deferred Register to hold Blocks which will all be registered under the "playertrackermod" namespace
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     // Create a Deferred Register to hold Items which will all be registered under the "playertrackermod" namespace
@@ -66,6 +74,9 @@ public class PlayerTrackerMod {
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public PlayerTrackerMod(IEventBus modEventBus, ModContainer modContainer) {
+        // Set singleton instance
+        instance = this;
+        
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
@@ -89,16 +100,32 @@ public class PlayerTrackerMod {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
+        // Initialize core components
+        initializeComponents();
+        
         // Some common setup code
-        LOGGER.info("HELLO FROM COMMON SETUP");
+        LOGGER.info("Player Tracker Mod initialized successfully!");
 
-        if (Config.LOG_DIRT_BLOCK.getAsBoolean()) {
-            LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));
-        }
+        // Log some basic info about the mod
+        LOGGER.info("Player Tracker Mod - Common Setup Complete");
 
-        LOGGER.info("{}{}", Config.MAGIC_NUMBER_INTRODUCTION.get(), Config.MAGIC_NUMBER.getAsInt());
-
-        Config.ITEM_STRINGS.get().forEach((item) -> LOGGER.info("ITEM >> {}", item));
+        LOGGER.info("Mod enabled: {}", Config.MOD_ENABLED.get());
+        LOGGER.info("HUD enabled: {}", Config.HUD_ENABLED.get());
+        LOGGER.info("Max detection distance: {} blocks", Config.MAX_DETECTION_DISTANCE.get());
+        LOGGER.info("Update interval: {} ticks", Config.UPDATE_INTERVAL.get());
+    }
+    
+    private void initializeComponents() {
+        // Initialize player cache
+        this.playerCache = new PlayerCache(
+            Config.MAX_PLAYERS_DISPLAY.get(),
+            Config.CACHE_LIFETIME.get()
+        );
+        
+        // Initialize player stats
+        this.playerStats = new PlayerStats("Minecraft Server");
+        
+        LOGGER.info("Core components initialized");
     }
 
     // Add the example block item to the building blocks tab
@@ -112,6 +139,20 @@ public class PlayerTrackerMod {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
-        LOGGER.info("HELLO from server starting");
+        LOGGER.info("Player Tracker Mod ready on server: {}", event.getServer().getMotd());
+    }
+    
+    // Getters for core components
+    public PlayerCache getPlayerCache() {
+        return playerCache;
+    }
+    
+    public PlayerStats getPlayerStats() {
+        return playerStats;
+    }
+    
+    // Static getter for singleton instance
+    public static PlayerTrackerMod getInstance() {
+        return instance;
     }
 }

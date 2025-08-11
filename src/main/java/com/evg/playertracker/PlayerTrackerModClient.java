@@ -24,8 +24,18 @@ public class PlayerTrackerModClient {
 
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
-        // Some client setup code
-        PlayerTrackerMod.LOGGER.info("HELLO FROM CLIENT SETUP");
-        PlayerTrackerMod.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+        // Client setup code
+        PlayerTrackerMod.LOGGER.info("Player Tracker Mod - Client Setup Complete");
+        PlayerTrackerMod.LOGGER.info("Player name: {}", Minecraft.getInstance().getUser().getName());
+        PlayerTrackerMod.LOGGER.info("HUD mode: {}", Config.HUD_MODE.get());
+        PlayerTrackerMod.LOGGER.info("Sort mode: {}", Config.SORT_MODE.get());
+        
+        // Initialize client-side components
+        initializeClientComponents();
+    }
+    
+    private static void initializeClientComponents() {
+        // HUD и PlayerDetector автоматически инициализируются через @EventBusSubscriber
+        PlayerTrackerMod.LOGGER.info("Client components initialized");
     }
 }
