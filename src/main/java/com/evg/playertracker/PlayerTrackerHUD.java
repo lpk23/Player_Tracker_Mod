@@ -21,6 +21,9 @@ public class PlayerTrackerHUD {
     private static final int BORDER_COLOR = 0xFF404040;
     private static final int TEXT_COLOR = 0xFFFFFFFF;
     
+    private static long lastRenderTime = 0;
+    private static final long RENDER_INTERVAL = 1000; // 1 секунда
+    
     // Простой метод для отображения HUD
     public static void renderHUD() {
         if (!Config.HUD_ENABLED.get() || !Config.MOD_ENABLED.get()) {
@@ -66,9 +69,9 @@ public class PlayerTrackerHUD {
     private static void renderSimpleHUD(Minecraft minecraft, List<PlayerData> players) {
         // Простая реализация HUD через логирование
         if (minecraft.player != null && players.size() > 0) {
-            PlayerTrackerMod.LOGGER.debug("HUD: Обнаружено {} игроков", players.size());
+            PlayerTrackerMod.LOGGER.info("HUD: Обнаружено {} игроков", players.size());
             for (PlayerData player : players) {
-                PlayerTrackerMod.LOGGER.debug("Игрок: {} на расстоянии {:.1f} блоков", 
+                PlayerTrackerMod.LOGGER.info("Игрок: {} на расстоянии {:.1f} блоков", 
                     player.getUsername(), player.getDistance());
             }
         }
@@ -90,7 +93,7 @@ public class PlayerTrackerHUD {
     
     // Метод для проверки видимости игрока в FOV
     public static boolean isPlayerInFOV(Vec3 playerPos, Vec3 targetPos, Vec3 playerLookDir) {
-        if (!Config.FILTER_NPCS.get()) {
+        if (!Config.FOV_FILTER.get()) {
             return true;
         }
         

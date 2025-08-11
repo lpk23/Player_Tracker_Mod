@@ -39,5 +39,6 @@ public class PlayerTrackerModClient {
         PlayerTrackerMod.LOGGER.info("Мод работает полностью на клиенте");
         PlayerTrackerMod.LOGGER.info("Обнаружение игроков происходит автоматически");
         PlayerTrackerMod.LOGGER.info("Используйте HUD для просмотра информации");
+        PlayerTrackerMod.LOGGER.info("Для тестирования HUD вызовите PlayerTrackerHUD.renderHUD()");
     }
 }

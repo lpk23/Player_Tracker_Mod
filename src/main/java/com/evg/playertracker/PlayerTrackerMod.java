@@ -113,6 +113,34 @@ public class PlayerTrackerMod {
         LOGGER.info("HUD enabled: {}", Config.HUD_ENABLED.get());
         LOGGER.info("Max detection distance: {} blocks", Config.MAX_DETECTION_DISTANCE.get());
         LOGGER.info("Update interval: {} ticks", Config.UPDATE_INTERVAL.get());
+        
+        // Запускаем автоматическое обновление HUD
+        startHUDUpdate();
+    }
+    
+    private void startHUDUpdate() {
+        // Создаем отдельный поток для обновления HUD
+        Thread hudThread = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(2000); // Обновляем каждые 2 секунды
+                    
+                    // Проверяем, включен ли HUD
+                    if (Config.HUD_ENABLED.get() && Config.MOD_ENABLED.get()) {
+                        // Вызываем HUD
+                        PlayerTrackerHUD.renderHUD();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        hudThread.setDaemon(true);
+        hudThread.setName("PlayerTracker-HUD");
+        hudThread.start();
+        
+        LOGGER.info("HUD update thread started");
     }
     
     private void initializeComponents() {
