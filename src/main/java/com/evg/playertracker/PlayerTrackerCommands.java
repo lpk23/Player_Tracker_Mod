@@ -9,6 +9,7 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -87,7 +88,7 @@ public class PlayerTrackerCommands {
     private static int showStatus(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         // Команда доступна всем игрокам без прав OP
-        if (!(source.getEntity() instanceof ServerPlayer player)) {
+        if (!(source.getEntity() instanceof Player player)) {
             source.sendFailure(Component.literal("Эта команда может быть выполнена только игроком"));
             return 0;
         }
@@ -153,7 +154,7 @@ public class PlayerTrackerCommands {
     private static int listPlayers(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         // Команда доступна всем игрокам без прав OP
-        if (!(source.getEntity() instanceof ServerPlayer player)) {
+        if (!(source.getEntity() instanceof Player player)) {
             source.sendFailure(Component.literal("Эта команда может быть выполнена только игроком"));
             return 0;
         }
@@ -343,7 +344,7 @@ public class PlayerTrackerCommands {
     
     private static int scanPlayers(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        if (!(source.getEntity() instanceof ServerPlayer player)) {
+        if (!(source.getEntity() instanceof Player player)) {
             source.sendFailure(Component.literal("Эта команда может быть выполнена только игроком"));
             return 0;
         }

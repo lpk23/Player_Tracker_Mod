@@ -35,7 +35,8 @@ public class PlayerTrackerModClient {
     }
     
     private static void initializeClientComponents() {
-        // HUD и PlayerDetector автоматически инициализируются через @EventBusSubscriber
         PlayerTrackerMod.LOGGER.info("Client components initialized");
+        PlayerTrackerMod.LOGGER.info("Для использования команд в мультиплеере используйте /playertracker");
+        PlayerTrackerMod.LOGGER.info("На клиенте команды работают только в одиночной игре");
     }
 }

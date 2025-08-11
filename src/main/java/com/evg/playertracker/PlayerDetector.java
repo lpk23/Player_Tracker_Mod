@@ -1,6 +1,5 @@
 package com.evg.playertracker;
 
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -39,10 +38,6 @@ public class PlayerDetector {
         List<? extends Player> worldPlayers = level.players();
         
         for (Player player : worldPlayers) {
-            if (!(player instanceof ServerPlayer serverPlayer)) {
-                continue;
-            }
-            
             Vec3 playerPos = player.position();
             
             for (Player otherPlayer : worldPlayers) {
@@ -50,16 +45,12 @@ public class PlayerDetector {
                     continue;
                 }
                 
-                if (!(otherPlayer instanceof ServerPlayer otherServerPlayer)) {
-                    continue;
-                }
-                
                 // Проверяем валидность игрока
-                if (!isValidPlayer(otherServerPlayer.getName().getString())) {
+                if (!isValidPlayer(otherPlayer.getName().getString())) {
                     continue;
                 }
                 
-                Vec3 targetPos = otherServerPlayer.position();
+                Vec3 targetPos = otherPlayer.position();
                 double distance = playerPos.distanceTo(targetPos);
                 
                 // Проверяем дистанцию
@@ -68,7 +59,7 @@ public class PlayerDetector {
                 }
                 
                 // Проверяем, не слишком ли часто мы обновляем этого игрока
-                UUID playerUUID = otherServerPlayer.getUUID();
+                UUID playerUUID = otherPlayer.getUUID();
                 long currentTime = System.currentTimeMillis();
                 Long lastTime = lastDetectionTime.get(playerUUID);
                 
@@ -80,19 +71,19 @@ public class PlayerDetector {
                 lastDetectionTime.put(playerUUID, currentTime);
                 
                 // Получаем биом
-                Biome biome = level.getBiome(otherServerPlayer.blockPosition()).value();
+                Biome biome = level.getBiome(otherPlayer.blockPosition()).value();
                 
                 // Добавляем игрока в кэш для каждого игрока, который его видит
                 PlayerCache cache = PlayerTrackerMod.getInstance().getPlayerCache();
                 if (cache != null) {
-                    cache.addPlayer(playerUUID, otherServerPlayer.getName().getString(), targetPos, biome, playerPos);
+                    cache.addPlayer(playerUUID, otherPlayer.getName().getString(), targetPos, biome, playerPos);
                     
                     // Записываем в статистику
                     PlayerStats stats = PlayerTrackerMod.getInstance().getPlayerStats();
                     if (stats != null) {
                         long sessionDuration = 1000; // Примерная длительность сессии
-                        stats.recordPlayerAppearance(playerUUID, otherServerPlayer.getName().getString(), 
-                            otherServerPlayer.blockPosition(), biome, sessionDuration);
+                        stats.recordPlayerAppearance(playerUUID, otherPlayer.getName().getString(), 
+                            otherPlayer.blockPosition(), biome, sessionDuration);
                     }
                 }
             }
