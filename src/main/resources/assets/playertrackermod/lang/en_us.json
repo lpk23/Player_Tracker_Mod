@@ -1,0 +1,13 @@
+{
+  "itemGroup.playertrackermod": "Example Mod Tab",
+  "block.playertrackermod.example_block": "Example Block",
+  "item.playertrackermod.example_item": "Example Item",
+
+  "playertrackermod.configuration.title": "Player Tracker Mod Configs",
+  "playertrackermod.configuration.section.playertrackermod.common.toml": "Player Tracker Mod Configs",
+  "playertrackermod.configuration.section.playertrackermod.common.toml.title": "Player Tracker Mod Configs",
+  "playertrackermod.configuration.items": "Item List",
+  "playertrackermod.configuration.logDirtBlock": "Log Dirt Block",
+  "playertrackermod.configuration.magicNumberIntroduction": "Magic Number Text",
+  "playertrackermod.configuration.magicNumber": "Magic Number"
+}
